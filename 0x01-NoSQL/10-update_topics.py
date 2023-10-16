@@ -8,7 +8,7 @@ def update_topics(mongo_collection, name, topics):
     """
     update document to accept topics
     """
-    mongo_collection.update_one(
+    mongo_collection.update_many(
         {'name': name},
         {'$set': {'topics': topics}}
     )
