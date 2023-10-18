@@ -2,39 +2,30 @@
 """
 A module with tools for request caching and tracking.
 """
-import redis
 import requests
-from functools import wraps
-from typing import Callable
+import redis
 
 
-redis_store = redis.Redis()
+redis_client = redis.Redis()
 
 
-def data_cacher(method: Callable) -> Callable:
-    """
-    Caches the output of fetched data.
-    """
-    @wraps(method)
-    def wrapper(url) -> str:
-        """
-        The wrapper function for caching the output.
-        """
-        redis_store.incr(f'count:{url}')
-        result = redis_store.get(f'result:{url}')
-        if result:
-            return result.decode('utf-8')
-        result = method(url)
-        redis_store.set(f'count:{url}', 0)
-        redis_store.setex(f'result:{url}', 10, result)
-        return result
-    return wrapper
-
-
-@data_cacher
 def get_page(url: str) -> str:
     """
-    Returns the content of a URL after caching the request's
-    response,and tracking the request.
+    Returns the content of a URL after caching the request's response,
+    and tracking the request.
     """
-    return requests.get(url).text
+    cached_content = redis_client.get(url)
+    if cached_content:
+        print("Content retrieved from cache.")
+        return cached_content.decode('utf-8')
+
+    print("Fetching content from the web...")
+    response = requests.get(url)
+    content = response.content.decode('utf-8')
+
+    redis_client.setex(url, 10, content)
+
+    access_count_key = f"count:{url}"
+    redis_client.incr(access_count_key)
+
+    return content
