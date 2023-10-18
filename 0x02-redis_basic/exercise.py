@@ -5,7 +5,7 @@ writing strings to redis
 import redis
 import uuid
 from typing import Union, Callable
-from funtools import wraps
+from functools import wraps
 
 
 def count_calls(method: Callable) -> Callable:
@@ -83,4 +83,4 @@ class Cache:
         """
         convert redis data to int
         """
-        lambda x: int(x)
+        return self.get(key, lambda x: int(x))
