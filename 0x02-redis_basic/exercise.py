@@ -17,9 +17,8 @@ def count_calls(method: Callable) -> Callable:
         """
         call method after incrementing its call counter
         """
-        method_to_count = method.__qualname__
-        redis_client = getattr(self, '_redis')
-        redis_client.incr(method_to_count)
+        if isinstance(self._redis, redis.Redis):
+            self._redis.incr(method.__qualname__)
         return method(self, *args, **kwargs)
     return wrapper
 
@@ -67,11 +66,7 @@ class Cache:
             key of the data stored in redis
         """
         data = self._redis.get(key)
-        if data is None:
-            return data
-
-        if fn:
-            return fn(data)
+        return fn(data) if fn is not None else data
 
     def get_str(self, key: str) -> str:
         """
