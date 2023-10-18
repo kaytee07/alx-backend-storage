@@ -4,7 +4,7 @@ writing strings to redis
 """
 import redis
 import uuid
-from typing import Union, Callable
+from typing import Union, Callable, Any
 from functools import wraps
 
 
@@ -25,13 +25,13 @@ def count_calls(method: Callable) -> Callable:
 
 def call_history(method: Callable) -> Callable:
     """
-    store history of input and output of a function of a 
+    store history of input and output of a function of a
     particular method
     """
     @wraps(method)
     def wrapper(self, *args, **kwargs) -> Any:
         """
-        Returns the method's output after storing its 
+        Returns the method's output after storing its
         inputs and output.
         """
         inputs = '{}:inputs'.format(method.__qualname__)
@@ -108,7 +108,7 @@ class Cache:
 
         Args:
             key: key used to store the data
-            fn: callable function that convert rtrieved data to 
+            fn: callable function that convert rtrieved data to
             appropriate data type
 
         Return:
