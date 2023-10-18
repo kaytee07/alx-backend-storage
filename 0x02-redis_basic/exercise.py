@@ -5,6 +5,23 @@ writing strings to redis
 import redis
 import uuid
 from typing import Union, Callable
+from funtools import wraps
+
+
+def count_calls(method: Callable) -> Callable:
+    """
+    count number of calls made to Cache class methods
+    """
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        """
+        call method after incrementing its call counter
+        """
+        method_to_count = method.__qualname__
+        redis_client = getattr(self, '_redis')
+        redis_client.incr(method_to_count)
+        return method(self, *args, **kwargs)
+    return wrapper
 
 
 class Cache:
@@ -19,6 +36,7 @@ class Cache:
         self._redis = redis.Redis()
         self._redis.flushdb(True)
 
+    @count_calls
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """
         store data in redis using key generate with uuid
@@ -33,7 +51,10 @@ class Cache:
         self._redis.set(key, data)
         return key
 
-    def get(self, key, fn: Callable = None) -> Union[str, bytes, int, float]:
+    def get(
+            self,
+            key: str,
+            fn: Callable = None) -> Union[str, bytes, int, float]:
         """
         get data from redis db and convert to required data type
 
@@ -47,7 +68,7 @@ class Cache:
         """
         data = self._redis.get(key)
         if data is None:
-            return None
+            return data
 
         if fn:
             return fn(data)
