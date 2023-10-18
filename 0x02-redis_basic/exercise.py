@@ -12,7 +12,7 @@ class Cache:
     cache class
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         store instance of redis client and flush with flushdb
         """
@@ -35,7 +35,15 @@ class Cache:
 
     def get(self, key, fn: Callable = None) -> Union[str, bytes, int, float]:
         """
-        convert data back to it callable format
+        get data from redis db and convert to required data type
+
+        Args:
+            key: key used to store the data
+            fn: callable function that convert rtrieved data to 
+            appropriate data type
+
+        Return:
+            key of the data stored in redis
         """
         data = self._redis.get(key)
         if data is None:
