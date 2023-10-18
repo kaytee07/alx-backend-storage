@@ -16,7 +16,7 @@ def data_cacher(method: Callable) -> Callable:
     Caches the output of fetched data.
     """
     @wraps(method)
-    def invoker(url) -> str:
+    def wrapper(url) -> str:
         """
         The wrapper function for caching the output.
         """
@@ -28,13 +28,13 @@ def data_cacher(method: Callable) -> Callable:
         redis_store.set(f'count:{url}', 0)
         redis_store.setex(f'result:{url}', 10, result)
         return result
-    return invoker
+    return wrapper
 
 
 @data_cacher
 def get_page(url: str) -> str:
     """
-    Returns the content of a URL after caching the request's response,
-    and tracking the request.
+    Returns the content of a URL after caching the request's
+    response,and tracking the request.
     """
     return requests.get(url).text
